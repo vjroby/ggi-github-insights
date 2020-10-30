@@ -33,7 +33,8 @@ default_args = {
 OUTPUT_BUCKET = os.environ['OUTPUT_BUCKET']
 PYSPARK_BUCKET =  os.environ['PYSPARK_BUCKET']
 CLUSTER_NAME = os.environ['CLUSTER_NAME']
-PYSPARK_MAIN_FILENAME = os.environ['PYSPARK_MAIN_FILENAME']
+PYSPARK_MAIN_PATH = os.environ['PYSPARK_MAIN_PATH']
+PYSPARK_ARCHIVE_PATH = os.environ['PYSPARK_ARCHIVE_PATH']
 
 # these settings could be also configured form env
 date_tag = date.today().strftime('%Y%m%d')
@@ -103,9 +104,9 @@ copy_filenames_to_gs = FileToGoogleCloudStorageOperator(
 dataproc_task = DataProcPySparkOperator(
     task_id="pyspark",
     cluster_name=CLUSTER_NAME,
-    main=f"gs://{PYSPARK_BUCKET}/{PYSPARK_MAIN_FILENAME}",
+    main=f"gs://{PYSPARK_BUCKET}/{PYSPARK_MAIN_PATH}",
     arguments=[filenames_path],
-    archives= [f"gs://{PYSPARK_BUCKET}/dataproc/package.zip"],
+    archives= [f"gs://{PYSPARK_BUCKET}/{PYSPARK_ARCHIVE_PATH}"],
     region='us-central1',
     dag=dag
 )
