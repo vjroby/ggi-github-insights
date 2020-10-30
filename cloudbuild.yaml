@@ -1,4 +1,7 @@
 steps:
+  - name: gcr.io/cloud-builders/git
+    args: [ 'clone', 'https://github.com/vjroby/ggi-github-insights' ]
+    id: 'check-out-source-code'
   - name: gcr.io/cloud-builders/gcloud
     entrypoint: 'bash'
     args: [ 'set_env.sh' ]
