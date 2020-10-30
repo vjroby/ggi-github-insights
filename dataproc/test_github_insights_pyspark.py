@@ -1,12 +1,11 @@
-from typing import List, Dict
-
-import numpy
-
-from dataproc.github_insights_pyspark import GGiGitHubInsights
+from dataproc.start_pyspak import GGiGitHubInsights
 from pyspark.sql import SparkSession, DataFrame
 from pandas.testing import assert_frame_equal
 from pyspark.sql import functions as F
+from typing import List
+
 import logging
+import numpy
 import pandas as pd
 import unittest
 
@@ -69,3 +68,7 @@ class GGiGitHubInsightsTest(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.spark.stop()
+
+
+if __name__ == "__main__":
+    unittest.main()

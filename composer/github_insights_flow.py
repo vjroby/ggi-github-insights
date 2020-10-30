@@ -69,7 +69,7 @@ def create_increment_dates(start, end) -> List[str]:
 def save_to_csv(filenames ,path):
     with open(f'{path}', mode='w') as files_to_process:
         filenames_writer = csv.writer(files_to_process)
-        [filenames_writer.writerow(fn) for fn in filenames]
+        [filenames_writer.writerow([fn]) for fn in filenames]
 
 
 dag = DAG(

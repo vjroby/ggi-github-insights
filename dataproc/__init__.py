@@ -1,1 +1,1 @@
-from dataproc import *
+from dataproc import github_insights_pyspark,test_github_insights_pyspark
