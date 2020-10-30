@@ -23,4 +23,4 @@ steps:
   - name: gcr.io/cloud-builders/gsutil
     args: [ 'cp', 'start_pyspak.py', 'gs://ggi_artifacts/dataproc/start_pyspak.py' ]
     dir: '$REPO_NAME/dataproc'
-    id: 'deploy-package'
+    id: 'deploy-start_script'
