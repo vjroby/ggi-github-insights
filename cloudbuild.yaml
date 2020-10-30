@@ -7,7 +7,7 @@ steps:
     args: [ 'set_env.sh' ]
     dir: '$REPO_NAME/build-pipeline'
     id: 'set_up_env_vars'
-  - name: gcr.io/google.com/cloudsdktool/gsutil
+  - name: gcr.io/cloud-builders/gsutil
     entrypoint: 'bash'
     args:
       - -c
