@@ -29,14 +29,17 @@ default_args = {
     # 'trigger_rule': 'all_success'
 }
 
-OUTPUT_BUCKET = "data_gharchive_org_2020-01_02_us"
-PYSPARK_BUCKET = "data_gharchive_org_2020-01_02_us"
-CLUSTER_NAME = "cluster-aa02"
+# env
+OUTPUT_BUCKET = os.environ['OUTPUT_BUCKET']
+PYSPARK_BUCKET =  os.environ['PYSPARK_BUCKET']
+CLUSTER_NAME = os.environ['CLUSTER_NAME']
 PYSPARK_MAIN_FILENAME = "github_insights_pyspark.py"
+
+# these settings could be also configured form env
 date_tag = date.today().strftime('%Y%m%d')
 base_folder = '/home/airflow/gcs/data'
-GGI_FILES_TO_PROCESS = "ggi_files_to_process.csv"
-filenames_path = f"{base_folder}/{GGI_FILES_TO_PROCESS}"
+ggi_files_to_process = "ggi_files_to_process.csv"
+filenames_path = f"{base_folder}/{ggi_files_to_process}"
 gh_archive_start_date = "2014-03-01"
 gh_archive_end_date = "2014-03-02"
 
@@ -46,16 +49,8 @@ def create_combined_tasks(download_link, dag, bucket) -> Tuple[BashOperator,str]
     download_task = BashOperator(
         task_id=f"download_{file_name}",
         bash_command=f"curl {download_link} | gsutil cp - gs://{bucket}/{file_name}",
-        # bash_command=f"wget {download_link} -O {file_name}",
         dag=dag
     )
-    # move_task = BashOperator(
-    #     task_id=f"copy_to_bucket_{file_name}",
-    #     bash_command=f"gsutil mv {file_name} gs://{bucket}",
-    #     dag=dag
-    # )
-    # download_task >> move_task
-    # return download_task, move_task
     return download_task, file_name
 
 
@@ -98,9 +93,9 @@ save_filenames_task = PythonOperator(
 )
 
 copy_filenames_to_gs = FileToGoogleCloudStorageOperator(
-    task_id=f"copy_{GGI_FILES_TO_PROCESS}_to_gs",
+    task_id=f"copy_{ggi_files_to_process}_to_gs",
     src=filenames_path,
-    dst=GGI_FILES_TO_PROCESS,
+    dst=ggi_files_to_process,
     bucket=OUTPUT_BUCKET,
     dag=dag
 )
@@ -112,24 +107,6 @@ dataproc_task = DataProcPySparkOperator(
     dag=dag
 )
 
+#TODO create a task to clear the bucket
 
-dl_tasks >> save_filenames_task >> copy_filenames_to_gs #>> dataproc_task >> clear_bucket
-
-# bq_dataset_name = 'airflow_bq_dataset_{{ ds_nodash }}'
-# bq_githib_commits_table_id = bq_dataset_name + '.github_commits'
-# output_file = 'gs://{gcs_bucket}/github_commits.csv'.format(
-#     gcs_bucket=gsc_bucket)
-# # Perform query of Airflow GitHub commits
-# bq_airflow_commits_query = bigquery_operator.BigQueryOperator(
-#     task_id='bq_airflow_commits_query',
-#     bql="""      SELECT commit, subject, message
-#       FROM [bigquery-public-data:github_repos.commits]
-#       WHERE repo_name contains 'airflow'
-#       """,
-#     destination_dataset_table=bq_githib_commits_table_id)
-# # Export query result to Cloud Storage
-# export_commits_to_gcs = bigquery_to_gcs.BigQueryToCloudStorageOperator(
-#     task_id='export_airflow_commits_to_gcs',
-#     source_project_dataset_table=bq_githib_commits_table_id,
-#     destination_cloud_storage_uris=[output_file],
-#     export_format='CSV')
+dl_tasks >> save_filenames_task >> copy_filenames_to_gs >> dataproc_task #>> clear_bucket
