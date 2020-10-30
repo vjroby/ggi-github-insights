@@ -1,15 +1,15 @@
 steps:
   - name: gcr.io/cloud-builders/gcloud
     entrypoint: 'bash'
-    args: [ 'build-pipeline/set_env.sh' ]
-    dir: '$REPO_NAME'
+    args: [ 'set_env.sh' ]
+    dir: '$REPO_NAME/build-pipeline'
     id: 'set_up_env_vars'
   - name: gcr.io/cloud-builders/gcloud
     entrypoint: 'bash'
-    args: [ 'build-pipeline/package.sh' ]
-    dir: '$REPO_NAME'
+    args: [ 'package.sh' ]
+    dir: '$REPO_NAME/build-pipeline'
     id: 'packaging_zip_archive'
   - name: gcr.io/cloud-builders/gsutil
     args: [ 'cp', 'package.zip', 'gs://${ARTIFACTS_BUCKET}/package_$BUILD_ID.zip' ]
-    dir: '$REPO_NAME/package.zip'
+    dir: '$REPO_NAME'
     id: 'deploy-package'
