@@ -75,3 +75,4 @@ spark-warehouse
 metastore_db
 .ipynb_checkpoints
 gienv
+package.zip
