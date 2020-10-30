@@ -106,7 +106,7 @@ dataproc_task = DataProcPySparkOperator(
     cluster_name=CLUSTER_NAME,
     main=f"gs://{PYSPARK_BUCKET}/{PYSPARK_MAIN_PATH}",
     arguments=[filenames_path],
-    archives= [f"gs://{PYSPARK_BUCKET}/{PYSPARK_ARCHIVE_PATH}"],
+    pyfiles= [f"gs://{PYSPARK_BUCKET}/{PYSPARK_ARCHIVE_PATH}"],
     region='us-central1',
     dag=dag
 )
