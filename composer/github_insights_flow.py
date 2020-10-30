@@ -33,7 +33,7 @@ default_args = {
 OUTPUT_BUCKET = os.environ['OUTPUT_BUCKET']
 PYSPARK_BUCKET =  os.environ['PYSPARK_BUCKET']
 CLUSTER_NAME = os.environ['CLUSTER_NAME']
-PYSPARK_MAIN_FILENAME = "github_insights_pyspark.py"
+PYSPARK_MAIN_FILENAME = os.environ['PYSPARK_MAIN_FILENAME']
 
 # these settings could be also configured form env
 date_tag = date.today().strftime('%Y%m%d')
@@ -104,6 +104,8 @@ dataproc_task = DataProcPySparkOperator(
     task_id="pyspark",
     cluster_name=CLUSTER_NAME,
     main=f"gs://{PYSPARK_BUCKET}/{PYSPARK_MAIN_FILENAME}",
+    arguments=[filenames_path],
+    archives= [f"gs://{PYSPARK_BUCKET}/dataproc/package.zip"],
     dag=dag
 )
 
