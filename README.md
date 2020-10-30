@@ -37,3 +37,4 @@ export SPARK_HOME=<path to spark 2.3.4>
 1. Create and manage resource with terraform
 2. separate repo for composer and dataproc
 3. Get resources names automatically
+4. Added a build test step in a docker

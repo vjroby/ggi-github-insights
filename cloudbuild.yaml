@@ -23,4 +23,8 @@ steps:
   - name: gcr.io/cloud-builders/gsutil
     args: [ 'cp', 'start_pyspak.py', 'gs://ggi_artifacts/dataproc/start_pyspak.py' ]
     dir: '$REPO_NAME/dataproc'
-    id: 'deploy-start_script'
+    id: 'deploy-start-script'
+  - name: gcr.io/cloud-builders/gsutil
+    args: [ 'cp', 'github_insights_flow.py', 'gs://us-central1-ggi-composer-dd21bc6c-bucket/dag/github_insights_flow.py' ]
+    dir: '$REPO_NAME/composer'
+    id: 'deploy-composer-pipeline'
