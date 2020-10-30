@@ -10,6 +10,7 @@ os.environ['PYSPARK_ARCHIVE_PATH'] = ""
 
 from composer.github_insights_flow import create_increment_dates
 
+
 class TestStringMethods(unittest.TestCase):
 
     def test_create_increment_dates(self):

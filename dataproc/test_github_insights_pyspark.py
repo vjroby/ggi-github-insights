@@ -1,13 +1,15 @@
-from dataproc.start_pyspak import GGiGitHubInsights
 from pyspark.sql import SparkSession, DataFrame
 from pandas.testing import assert_frame_equal
-from pyspark.sql import functions as F
 from typing import List
+from pyspark.sql import functions as F
+from datetime import datetime
 
 import logging
 import numpy
 import pandas as pd
 import unittest
+
+from dataproc.github_insights_pyspark import GGiGitHubInsights
 
 
 class GGiGitHubInsightsTest(unittest.TestCase):
@@ -35,26 +37,61 @@ class GGiGitHubInsightsTest(unittest.TestCase):
 
     def test_read_json_gzipped(self):
         ggi = self.create_ggi_insights('')
-        expected = pd.DataFrame(self.create_pd_df([
+        expected = self.create_pd_df([
             '22484898|2|2017-03-01 00:00:00|9|3',
             '69984295|1|2017-03-01 00:00:00|9|3',
             '80294987|2|2017-03-01 00:00:00|9|3',
             '82382846|1|2017-03-01 00:00:00|9|3',
             '35569859|0|2017-03-01 00:00:01|9|3'
-        ])).astype({'month': 'int32','week_of_year': 'int32'})
+        ]).astype({'month': 'int32', 'week_of_year': 'int32'})
         df = ggi.read_json_gzipped(f'{self.base_path}/2017-03-01-0.json.gz') \
             .sort('timestamp', 'repository_id') \
             .limit(5)
 
         self.assert_frame_equal_with_sort(df, expected, ['timestamp', 'repository_id'])
 
-    def create_pd_df(self, values: List[str]):
+    def test_union_dfs(self):
+        input1 = self.create_df([
+            '22484898|2|2017-03-01 00:00:00|9|3',
+            '69984295|1|2017-05-01 00:00:00|9|5',
+            '35569859|0|2017-06-01 00:00:01|9|6'])
+        input2 = self.create_df(['80294987|2|2017-06-01 00:00:00|9|6'])
+        input3 = self.create_df(['82382846|1|2017-08-01 00:00:00|9|8'])
+        expected = self.create_pd_df([
+            '22484898|2|2017-03-01 00:00:00|9|3',
+            '35569859|0|2017-06-01 00:00:01|9|6',
+            '69984295|1|2017-05-01 00:00:00|9|5',
+            '80294987|2|2017-06-01 00:00:00|9|6',
+            '82382846|1|2017-08-01 00:00:00|9|8'
+        ])
+        ggi = self.create_ggi_insights('')
+        result = ggi.union_dfs([input1, input2, input3]).select(
+            F.col('repository_id'),
+            F.col('dist_commits'),
+            F.col('timestamp'),
+            F.col('week_of_year'),
+            F.col('month'),
+        )
+        self.assert_frame_equal_with_sort(result, expected, ['repository_id'])
+
+    def create_pd_df(self, values: List[str]) -> pd.DataFrame:
         def transform(s: str):
             sarr = s.split('|')
             return {'repository_id': numpy.int64(sarr[0]), 'dist_commits': numpy.int64(sarr[1]),
                     'timestamp': numpy.datetime64((sarr[2])), 'week_of_year': int(sarr[3]),
                     'month': int(sarr[4])}
-        return list(map(lambda v: transform(v), values))
+
+        return pd.DataFrame(list(map(lambda v: transform(v), values))) \
+
+
+    def create_df(self, values: List[str]):
+        def transform(s: str):
+            sarr = s.split('|')
+            return {'repository_id': int(sarr[0]), 'dist_commits': int(sarr[1]),
+                    'timestamp': datetime.strptime(sarr[2],"%Y-%m-%d %H:%M:%S"), 'week_of_year': int(sarr[3]),
+                    'month': int(sarr[4])}
+
+        return self.spark.createDataFrame(list(map(lambda v: transform(v), values)))
 
     @staticmethod
     def assert_frame_equal_with_sort(results: DataFrame, expected: pd.DataFrame, key_columns):

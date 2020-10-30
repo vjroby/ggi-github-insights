@@ -17,21 +17,14 @@ default_args = {
     'email': ['airflow@example.com'],
     'email_on_failure': False,
     'email_on_retry': False,
-    'retries': 1,
+    'retries': 0,
     'retry_delay': timedelta(minutes=5),
-    # 'queue': 'bash_queue',
-    # 'sla': timedelta(hours=2),
-    # 'execution_timeout': timedelta(seconds=300),
-    # 'on_failure_callback': some_function,
-    # 'on_success_callback': some_other_function,
-    # 'on_retry_callback': another_function,
-    # 'sla_miss_callback': yet_another_function,
-    # 'trigger_rule': 'all_success'
+    'sla': timedelta(hours=2),
 }
 
 # env
 OUTPUT_BUCKET = os.environ['OUTPUT_BUCKET']
-PYSPARK_BUCKET =  os.environ['PYSPARK_BUCKET']
+PYSPARK_BUCKET = os.environ['PYSPARK_BUCKET']
 CLUSTER_NAME = os.environ['CLUSTER_NAME']
 PYSPARK_MAIN_PATH = os.environ['PYSPARK_MAIN_PATH']
 PYSPARK_ARCHIVE_PATH = os.environ['PYSPARK_ARCHIVE_PATH']
@@ -45,7 +38,7 @@ gh_archive_start_date = "2014-03-01"
 gh_archive_end_date = "2014-03-02"
 
 
-def create_combined_tasks(download_link, dag, bucket) -> Tuple[BashOperator,str]:
+def create_combined_tasks(download_link, dag, bucket) -> Tuple[BashOperator, str]:
     file_name = download_link.replace("https://data.gharchive.org/", "")
     download_task = BashOperator(
         task_id=f"download_{file_name}",
@@ -66,51 +59,54 @@ def create_increment_dates(start, end) -> List[str]:
     return result
 
 
-def save_to_csv(filenames ,path):
+def save_to_csv(filenames, path):
     with open(f'{path}', mode='w') as files_to_process:
         filenames_writer = csv.writer(files_to_process)
         [filenames_writer.writerow([fn]) for fn in filenames]
 
 
-dag = DAG(
-    'github_insights',
-    default_args=default_args,
-    description='Downloads github events, copies them to a bucket, runs a dataproc task that puts the results in BigQuery',
-    schedule_interval=timedelta(days=1),
-)
+with DAG(
+        'github_insights',
+        default_args=default_args,
+        description='Downloads github events, copies them to a bucket, runs a dataproc task that puts the results in BigQuery',
+        schedule_interval=timedelta(days=1),
+) as dag:
+    # links = create_increment_dates(gh_archive_start_date, gh_archive_end_date)
+    links = ['https://data.gharchive.org/2017-01-01-0.json.gz', 'https://data.gharchive.org/2017-03-01-0.json.gz']
+    map_to_tasks = lambda link: create_combined_tasks(link, dag, OUTPUT_BUCKET)
+    tuple_tasks_filenames = list(map(map_to_tasks, links))
+    dl_tasks = list(map(lambda t: t[0], tuple_tasks_filenames))
+    filenames = list(map(lambda t: t[1], tuple_tasks_filenames))
 
-# links = create_increment_dates(gh_archive_start_date, gh_archive_end_date)
-links = ['https://data.gharchive.org/2017-01-01-0.json.gz', 'https://data.gharchive.org/2017-03-01-0.json.gz']
-map_to_tasks = lambda link: create_combined_tasks(link, dag, OUTPUT_BUCKET)
-tuple_tasks_filenames = list(map(map_to_tasks, links))
-dl_tasks = list(map(lambda t: t[0], tuple_tasks_filenames))
-filenames = list(map(lambda t: t[1], tuple_tasks_filenames))
+    save_filenames_task = PythonOperator(
+        task_id="create_filenames_csv",
+        python_callable=save_to_csv,
+        op_kwargs={'filenames': filenames, 'path': filenames_path},
+        dag=dag
+    )
 
-save_filenames_task = PythonOperator(
-    task_id="create_filenames_csv",
-    python_callable=save_to_csv,
-    op_kwargs={'filenames' : filenames, 'path': filenames_path},
-    dag=dag
-)
+    copy_filenames_to_gs = FileToGoogleCloudStorageOperator(
+        task_id=f"copy_{ggi_files_to_process}_to_gs",
+        src=filenames_path,
+        dst=ggi_files_to_process,
+        bucket=OUTPUT_BUCKET,
+        dag=dag
+    )
 
-copy_filenames_to_gs = FileToGoogleCloudStorageOperator(
-    task_id=f"copy_{ggi_files_to_process}_to_gs",
-    src=filenames_path,
-    dst=ggi_files_to_process,
-    bucket=OUTPUT_BUCKET,
-    dag=dag
-)
+    dataproc_task = DataProcPySparkOperator(
+        task_id="pyspark",
+        cluster_name=CLUSTER_NAME,
+        main=f"gs://{PYSPARK_BUCKET}/{PYSPARK_MAIN_PATH}",
+        arguments=[f"gs://{OUTPUT_BUCKET}/{ggi_files_to_process}"],
+        pyfiles=[f"gs://{PYSPARK_BUCKET}/{PYSPARK_ARCHIVE_PATH}"],
+        region='us-central1',
+        dag=dag
+    )
 
-dataproc_task = DataProcPySparkOperator(
-    task_id="pyspark",
-    cluster_name=CLUSTER_NAME,
-    main=f"gs://{PYSPARK_BUCKET}/{PYSPARK_MAIN_PATH}",
-    arguments=[f"gs://{OUTPUT_BUCKET}/ggi_files_to_process.csv"],
-    pyfiles= [f"gs://{PYSPARK_BUCKET}/{PYSPARK_ARCHIVE_PATH}"],
-    region='us-central1',
-    dag=dag
-)
+    clear_bucket = BashOperator(
+        task_id=f'clear_output_bucket_{OUTPUT_BUCKET}',
+        bash_command=f'gsutil -m rm gs://{OUTPUT_BUCKET}/**',
+        dag=dag,
+    )
 
-#TODO create a task to clear the bucket
-
-dl_tasks >> save_filenames_task >> copy_filenames_to_gs >> dataproc_task #>> clear_bucket
+    dl_tasks >> save_filenames_task >> copy_filenames_to_gs >> dataproc_task >> clear_bucket

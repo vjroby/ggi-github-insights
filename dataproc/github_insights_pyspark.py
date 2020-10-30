@@ -1,3 +1,5 @@
+from typing import List
+
 from pyspark.sql import SparkSession, DataFrame
 import logging
 from pyspark.sql import functions as F
@@ -31,6 +33,12 @@ class GGiGitHubInsights:
             .withColumn('week_of_year', F.weekofyear(F.col('timestamp'))) \
             .withColumn('month', F.month(F.col('timestamp'))) \
             .na.drop()
+
+    def union_dfs(self, events_df: List[DataFrame]) -> DataFrame:
+        result = events_df[0]
+        for df in events_df[1:]:
+            result = result.union(df)
+        return result
 
 
 if __name__ == "__main__":
