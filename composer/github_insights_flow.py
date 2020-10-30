@@ -79,7 +79,7 @@ dag = DAG(
 )
 
 # links = create_increment_dates(gh_archive_start_date, gh_archive_end_date)
-links = ['https://data.gharchive.org/2014-03-01-0.json.gz', 'https://data.gharchive.org/2014-03-01-1.json.gz']
+links = ['https://data.gharchive.org/2017-01-01-0.json.gz', 'https://data.gharchive.org/2017-03-01-0.json.gz']
 map_to_tasks = lambda link: create_combined_tasks(link, dag, OUTPUT_BUCKET)
 tuple_tasks_filenames = list(map(map_to_tasks, links))
 dl_tasks = list(map(lambda t: t[0], tuple_tasks_filenames))
