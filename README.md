@@ -31,3 +31,8 @@ Create environment variables for spark:
 ```shell script
 export SPARK_HOME=<path to spark 2.3.4>
 ```
+
+## Improvements
+
+1. Create and manage resource with terraform
+2. separate repo for composer and dataproc
