@@ -2,7 +2,7 @@ steps:
   - name: gcr.io/cloud-builders/git
     args: [ 'clone', 'https://github.com/vjroby/ggi-github-insights' ]
     id: 'check-out-source-code'
-  - name: gcr.io/cloud-builders/gcloud
+  - name: gcr.io/cloud-builders/gsutil
     entrypoint: 'bash'
     args: [ 'set_env.sh' ]
     dir: '$REPO_NAME/build-pipeline'
