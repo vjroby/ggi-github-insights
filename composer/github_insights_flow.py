@@ -106,6 +106,7 @@ dataproc_task = DataProcPySparkOperator(
     main=f"gs://{PYSPARK_BUCKET}/{PYSPARK_MAIN_FILENAME}",
     arguments=[filenames_path],
     archives= [f"gs://{PYSPARK_BUCKET}/dataproc/package.zip"],
+    region='us-central1',
     dag=dag
 )
 
