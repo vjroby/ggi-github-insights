@@ -7,9 +7,13 @@ steps:
     args: [ 'set_env.sh' ]
     dir: '$REPO_NAME/build-pipeline'
     id: 'set_up_env_vars'
-  - name: gcr.io/cloud-builders/gcloud
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: 'bash'
-    args: [ 'package.sh' ]
+    args:
+      - -c
+      - |
+        apt-get install -y zip
+        sh package.sh
     dir: '$REPO_NAME/build-pipeline'
     id: 'packaging_zip_archive'
   - name: gcr.io/cloud-builders/gsutil
