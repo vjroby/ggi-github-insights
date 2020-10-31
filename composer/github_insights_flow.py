@@ -95,12 +95,12 @@ with DAG(
     )
 
     dataproc_task = DataProcPySparkOperator(
-        task_id="pyspark",
+        task_id="process_write_to_bigquery",
         cluster_name=CLUSTER_NAME,
         main=PYSPARK_MAIN_PATH,
         arguments=[f"gs://{OUTPUT_BUCKET}",ggi_files_to_process],
         pyfiles=[PYSPARK_ARCHIVE_PATH],
-        dataproc_pyspark_jars=['gs://spark-lib/bigquery/spark-bigquery-latest.jar'],
+        dataproc_pyspark_jars=['gs://spark-lib/bigquery/spark-bigquery-with-dependencies_2.12-0.16.0.jar'],
         region='us-central1',
         retries=0,
         dag=dag
