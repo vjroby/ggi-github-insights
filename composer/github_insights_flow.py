@@ -105,7 +105,7 @@ with DAG(
         dataproc_pyspark_jars=['gs://spark-lib/bigquery/spark-bigquery-with-dependencies_2.12-0.16.0.jar'],
         region='us-central1',
         retries=0,
-        job_name=f"process_write_to_bigquery_{time.time()}",
+        job_name=f"process_write_to_bigquery_{int(time.time())}",
         dag=dag
     )
 
