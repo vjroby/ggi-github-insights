@@ -41,14 +41,25 @@ grouped['day'].show()
 grouped['month'].show()
 grouped['week_of_year'].show()
 
+print("Saving to BigQuery...")
+# Use the Cloud Storage bucket for temporary BigQuery export data used
+# by the connector.
+
+spark.conf.set('temporaryGcsBucket', "data_gharchive_org_20203010")
 
 grouped['day'].write.format('bigquery')\
-      .option('table','github-insights-293713.commits_by_day')
+      .mode('append') \
+      .option('table','ggi_insights.commits_by_day')\
+      .save()
 
 grouped['month'].write.format('bigquery')\
-      .option('table','github-insights-293713.commits_by_month')
+      .mode('append') \
+      .option('table','ggi_insights.commits_by_month')\
+      .save()
 
 grouped['week_of_year'].write.format('bigquery')\
-      .option('table','github-insights-293713.commits_by_week_of_year')
+      .mode('append') \
+      .option('table','ggi_insights.commits_by_week_of_year')\
+      .save()
 
 
