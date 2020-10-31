@@ -107,7 +107,7 @@ with DAG(
     )
 
     clear_bucket = BashOperator(
-        task_id=f'clear_output_bucket_{OUTPUT_BUCKET}',
+        task_id=f'clear_{OUTPUT_BUCKET}',
         bash_command=f'gsutil -m rm gs://{OUTPUT_BUCKET}/**',
         dag=dag,
     )
