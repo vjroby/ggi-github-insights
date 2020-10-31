@@ -28,4 +28,3 @@ steps:
     args: [ 'cp', 'github_insights_flow.py', 'gs://us-central1-ggi-composer-17767269-bucket/dags/github_insights_flow.py' ]
     dir: '$REPO_NAME/composer'
     id: 'deploy-composer-pipeline'
-  timeout: 120s
