@@ -38,3 +38,4 @@ export SPARK_HOME=<path to spark 2.3.4>
 2. separate repo for composer and dataproc
 3. Get resources names automatically
 4. Added a build test step in a docker
+5. Use git hub tags for artifacts

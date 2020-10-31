@@ -97,7 +97,7 @@ with DAG(
         task_id="pyspark",
         cluster_name=CLUSTER_NAME,
         main=f"gs://{PYSPARK_BUCKET}/{PYSPARK_MAIN_PATH}",
-        arguments=[f"gs://{OUTPUT_BUCKET}/{ggi_files_to_process}"],
+        arguments=[f"gs://{OUTPUT_BUCKET}",ggi_files_to_process],
         pyfiles=[f"gs://{PYSPARK_BUCKET}/{PYSPARK_ARCHIVE_PATH}"],
         region='us-central1',
         dag=dag

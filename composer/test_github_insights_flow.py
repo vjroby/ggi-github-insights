@@ -2,6 +2,7 @@ import unittest
 
 import os
 
+# because github_insights_flow.py expects these env vars
 os.environ['OUTPUT_BUCKET'] = ""
 os.environ['PYSPARK_BUCKET'] = ""
 os.environ['CLUSTER_NAME'] = ""
