@@ -1,6 +1,9 @@
 ### GGi - GGi GitHub Insights
 
-The latest version of python that works with apache spark 2.3.4 is python 3.7
+Apache spark is bound to dataproc vm version (1.5)[https://cloud.google.com/dataproc/docs/concepts/versioning/dataproc-release-1.5]
+
+
+The latest version of python that works with apache spark 2.4.5 is python 3.7
 Create environment (gienv):
 
 ```shell script
@@ -29,7 +32,7 @@ python -m unittest
 Create environment variables for spark:
 
 ```shell script
-export SPARK_HOME=<path to spark 2.3.4>
+export SPARK_HOME=<path to spark 2.4.7>
 ```
 
 ## Improvements

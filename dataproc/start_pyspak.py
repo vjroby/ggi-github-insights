@@ -3,7 +3,6 @@ from dataproc.github_insights_pyspark import GGiGitHubInsights
 
 import argparse
 
-
 parser = argparse.ArgumentParser(description='PySpark start script for GGi GitHub insights')
 parser.add_argument('bucket', metavar='B')
 parser.add_argument('csv_filename', metavar='C')
@@ -34,4 +33,4 @@ files_unioned = ggi.union_dfs(files_df)
 
 print("Grouped by day, month and year")
 
-grouped = ggi.group_by_columns(files_unioned,['day',' month','week_of_year'])
+grouped = ggi.group_by_columns(files_unioned, ['day', 'month', 'week_of_year'])

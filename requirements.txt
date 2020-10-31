@@ -5,5 +5,5 @@ google-cloud==0.34.0
 google-cloud-storage==1.32.0
 pypandoc==1.5
 py4j==0.10.7
-pyspark==2.3.4
+pyspark==2.4.7
 pyspark-stubs==2.3.0
