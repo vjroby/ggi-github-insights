@@ -13,11 +13,11 @@ import csv
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': days_ago(2),
+    'start_date': days_ago(2), # start now
     'email': ['airflow@example.com'],
     'email_on_failure': False,
     'email_on_retry': False,
-    'retries': 0,
+    'retries': 0, # run once
     'retry_delay': timedelta(minutes=5),
     'sla': timedelta(hours=2),
 }
@@ -75,6 +75,7 @@ with DAG(
     links = ['https://data.gharchive.org/2017-01-01-0.json.gz', 'https://data.gharchive.org/2017-03-01-0.json.gz']
     map_to_tasks = lambda link: create_combined_tasks(link, dag, OUTPUT_BUCKET)
     tuple_tasks_filenames = list(map(map_to_tasks, links))
+
     dl_tasks = list(map(lambda t: t[0], tuple_tasks_filenames))
     filenames = list(map(lambda t: t[1], tuple_tasks_filenames))
 
@@ -99,6 +100,7 @@ with DAG(
         main=PYSPARK_MAIN_PATH,
         arguments=[f"gs://{OUTPUT_BUCKET}",ggi_files_to_process],
         pyfiles=[PYSPARK_ARCHIVE_PATH],
+        dataproc_jars='gs://spark-lib/bigquery/spark-bigquery-latest.jar',
         region='us-central1',
         retries=0,
         dag=dag

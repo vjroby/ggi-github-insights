@@ -11,7 +11,9 @@ args = parser.parse_args()
 print(f"Arguments parsed. Bucket:{args.bucket}  csv_filename:{args.csv_filename}  "
       f"Starting PySpark...")
 
-spark = SparkSession.builder.getOrCreate()
+spark = SparkSession.builder\
+      .appName('ggi-spark') \
+      .getOrCreate()
 
 print('SparkSession created. Initializing data processing')
 csv_filenames_path = f"{args.bucket}/{args.csv_filename}"
@@ -34,3 +36,11 @@ files_unioned = ggi.union_dfs(files_df)
 print("Grouped by day, month and year")
 
 grouped = ggi.group_by_columns(files_unioned, ['day', 'month', 'week_of_year'])
+
+grouped['day'].show()
+grouped['month'].show()
+grouped['week_of_year'].show()
+
+
+
+
