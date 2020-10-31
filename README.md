@@ -25,7 +25,7 @@ pip install -r requirements.txt
 Run tests
 
 ```shell script
-python -m unittest
+python3 -m unittest
 ```
 
 

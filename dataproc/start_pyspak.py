@@ -42,5 +42,13 @@ grouped['month'].show()
 grouped['week_of_year'].show()
 
 
+grouped['day'].write.format('bigquery')\
+      .option('table','ggi_results.commits_by_day')
+
+grouped['month'].write.format('bigquery')\
+      .option('table','ggi_results.commits_by_month')
+
+grouped['week_of_year'].write.format('bigquery')\
+      .option('table','ggi_results.commits_by_week_of_year')
 
 

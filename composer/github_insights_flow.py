@@ -100,7 +100,7 @@ with DAG(
         main=PYSPARK_MAIN_PATH,
         arguments=[f"gs://{OUTPUT_BUCKET}",ggi_files_to_process],
         pyfiles=[PYSPARK_ARCHIVE_PATH],
-        dataproc_jars=['gs://spark-lib/bigquery/spark-bigquery-latest.jar'],
+        dataproc_pyspark_jars=['gs://spark-lib/bigquery/spark-bigquery-latest.jar'],
         region='us-central1',
         retries=0,
         dag=dag
