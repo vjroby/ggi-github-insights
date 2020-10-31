@@ -9,18 +9,9 @@ from airflow.utils.dates import days_ago
 from airflow.contrib.operators.file_to_gcs import FileToGoogleCloudStorageOperator
 import os
 import csv
+import time
 
-default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'start_date': days_ago(2), # start now
-    'email': ['airflow@example.com'],
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'retries': 0, # run once
-    'retry_delay': timedelta(minutes=5),
-    'sla': timedelta(hours=2),
-}
+
 
 # env
 OUTPUT_BUCKET = os.environ['OUTPUT_BUCKET']
@@ -64,6 +55,17 @@ def save_to_csv(filenames, path):
         filenames_writer = csv.writer(files_to_process)
         [filenames_writer.writerow([fn]) for fn in filenames]
 
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'start_date': days_ago(2), # start now
+    'email': ['airflow@example.com'],
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 0, # run once
+    'retry_delay': timedelta(minutes=5),
+    'sla': timedelta(hours=2),
+}
 
 with DAG(
         f'github_insights',
@@ -103,6 +105,7 @@ with DAG(
         dataproc_pyspark_jars=['gs://spark-lib/bigquery/spark-bigquery-with-dependencies_2.12-0.16.0.jar'],
         region='us-central1',
         retries=0,
+        job_name=f"process_write_to_bigquery_{time.time()}",
         dag=dag
     )
 
