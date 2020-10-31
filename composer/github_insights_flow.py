@@ -34,8 +34,8 @@ date_tag = date.today().strftime('%Y%m%d')
 base_folder = '/home/airflow/gcs/data'
 ggi_files_to_process = "ggi_files_to_process.csv"
 filenames_path = f"{base_folder}/{ggi_files_to_process}"
-gh_archive_start_date = "2014-03-01"
-gh_archive_end_date = "2014-03-02"
+gh_archive_start_date = "2017-01-01"
+gh_archive_end_date = "2017-01-02"
 
 
 def create_combined_tasks(download_link, dag, bucket) -> Tuple[BashOperator, str]:
@@ -66,13 +66,13 @@ def save_to_csv(filenames, path):
 
 
 with DAG(
-        f'github_insights_{datetime.now().strftime("%y%m%d_%h_%s")}',
+        f'github_insights',
         default_args=default_args,
         description='Downloads github events, copies them to a bucket, runs a dataproc task that puts the results in BigQuery',
         schedule_interval=timedelta(days=1),
 ) as dag:
-    # links = create_increment_dates(gh_archive_start_date, gh_archive_end_date)
-    links = ['https://data.gharchive.org/2017-01-01-0.json.gz', 'https://data.gharchive.org/2017-03-01-0.json.gz']
+    links = create_increment_dates(gh_archive_start_date, gh_archive_end_date)
+    # links = ['https://data.gharchive.org/2017-01-01-0.json.gz', 'https://data.gharchive.org/2017-03-01-0.json.gz']
     map_to_tasks = lambda link: create_combined_tasks(link, dag, OUTPUT_BUCKET)
     tuple_tasks_filenames = list(map(map_to_tasks, links))
 
