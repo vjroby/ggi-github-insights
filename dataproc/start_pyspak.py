@@ -34,4 +34,4 @@ files_unioned = ggi.union_dfs(files_df)
 
 print("Grouped by day, month and year")
 
-grouped = ggi.group_by_columns(files_unioned,['day, month','week_of_year'])
+grouped = ggi.group_by_columns(files_unioned,['day',' month','week_of_year'])

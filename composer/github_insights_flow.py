@@ -100,6 +100,7 @@ with DAG(
         arguments=[f"gs://{OUTPUT_BUCKET}",ggi_files_to_process],
         pyfiles=[PYSPARK_ARCHIVE_PATH],
         region='us-central1',
+        retries=0,
         dag=dag
     )
 
