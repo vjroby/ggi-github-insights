@@ -1,5 +1,12 @@
 ### GGi - GGi GitHub Insights
 
+Project Structure per folder
+
+- `build-pipeline` - script used when building the project
+- `composer` - GCP airflow code
+- `dataproc` - GCP pyspark code
+- `notebooks` - jupyter notebook code for data exploration
+
 Apache spark is bound to dataproc vm version (1.5)[https://cloud.google.com/dataproc/docs/concepts/versioning/dataproc-release-1.5]
 
 
@@ -22,7 +29,7 @@ Download dependecies
 pip install -r requirements.txt
 ```
 
-Run tests
+Run tests for both airflow and pyspark
 
 ```shell script
 python3 -m unittest
@@ -38,7 +45,8 @@ export SPARK_HOME=<path to spark 2.4.7>
 ## Improvements
 
 1. Create and manage resource with terraform
-2. separate repo for composer and dataproc
-3. Get resources names automatically
-4. Added a build test step in a docker
-5. Use git hub tags for artifacts
+2. Get resources names automatically in the build step
+3. Added a build test step in a docker container
+4. Use git hub tags for artifacts
+5. Create a last build step to check that the DAG is running
+6. Use VPC with FW rules to better

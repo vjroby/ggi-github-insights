@@ -10,7 +10,7 @@ steps:
         apt-get install -y zip
         sh package.sh
     dir: '$REPO_NAME/build-pipeline'
-    id: 'packaging_zip_archive'
+    id: 'packaging-zip-archive'
   - name: gcr.io/cloud-builders/gsutil
     args: [ 'cp', 'package.zip', 'gs://ggi_artifacts/dataproc/package.zip' ]
     dir: '$REPO_NAME'
@@ -20,6 +20,6 @@ steps:
     dir: '$REPO_NAME/dataproc'
     id: 'deploy-dataproc-start-script'
   - name: gcr.io/cloud-builders/gsutil
-    args: [ 'cp', 'github_insights_flow.py', 'gs://us-central1-ggi-composer-8d5443e1-bucket/dags/github_insights_flow.py' ]
+    args: [ 'cp', 'github_insights_flow.py', 'gs://us-central1-ggi-composer-20-5ba2aa68-bucket/dags/github_insights_flow.py' ]
     dir: '$REPO_NAME/composer'
     id: 'deploy-composer-pipeline'

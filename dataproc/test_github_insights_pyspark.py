@@ -13,6 +13,7 @@ from dataproc.github_insights_pyspark import GGiGitHubInsights
 
 
 class GGiGitHubInsightsTest(unittest.TestCase):
+    # TODO test group by method
     spark: SparkSession = None
     base_path = 'dataproc/testdata/'
 
@@ -24,7 +25,7 @@ class GGiGitHubInsightsTest(unittest.TestCase):
                      .getOrCreate())
 
     @staticmethod
-    def supress_py4j_logging():
+    def suppress_py4j_logging():
         logger = logging.getLogger('py4j')
         logger.setLevel(logging.WARN)
 

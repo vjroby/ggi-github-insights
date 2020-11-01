@@ -11,9 +11,13 @@ args = parser.parse_args()
 print(f"Arguments parsed. Bucket:{args.bucket}  csv_filename:{args.csv_filename}  "
       f"Starting PySpark...")
 
-spark = SparkSession.builder\
-      .appName('ggi-spark') \
-      .getOrCreate()
+spark = SparkSession.builder \
+    .appName('ggi-spark') \
+    .getOrCreate()
+
+# Use the Cloud Storage bucket for temporary BigQuery export data used
+# by the connector.
+spark.conf.set('temporaryGcsBucket', "data_gharchive_org_20203010")
 
 print('SparkSession created. Initializing data processing')
 csv_filenames_path = f"{args.bucket}/{args.csv_filename}"
@@ -37,31 +41,14 @@ files_unioned = ggi.union_dfs(files_df)
 
 print("Grouped by day, month and year")
 
-grouped = ggi.group_by_columns(files_unioned, ['day', 'month', 'week_of_year'])
+grouped_col_list = ['day', 'month', 'week_of_year']
 
-grouped['day'].show()
-grouped['month'].show()
-grouped['week_of_year'].show()
+grouped = ggi.group_by_columns(files_unioned, grouped_col_list)
 
-print("Saving to BigQuery...")
-# Use the Cloud Storage bucket for temporary BigQuery export data used
-# by the connector.
-
-spark.conf.set('temporaryGcsBucket', "data_gharchive_org_20203010")
-
-grouped['day'].write.format('bigquery')\
-      .mode('append') \
-      .option('table','ggi_insights.commits_by_day')\
-      .save()
-
-grouped['month'].write.format('bigquery')\
-      .mode('append') \
-      .option('table','ggi_insights.commits_by_month')\
-      .save()
-
-grouped['week_of_year'].write.format('bigquery')\
-      .mode('append') \
-      .option('table','ggi_insights.commits_by_week_of_year')\
-      .save()
-
-
+for col in grouped_col_list:
+    grouped[col].show()
+    print(f"Saving to BigQuery by {col}...")
+    grouped[col].write.format('bigquery') \
+        .mode('append') \
+        .option('table', f"ggi_insights.commits_by_{col}") \
+        .save()

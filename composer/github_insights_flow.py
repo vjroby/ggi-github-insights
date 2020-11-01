@@ -58,20 +58,19 @@ def save_to_csv(filenames, path):
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': days_ago(2), # start now
+    'start_date': days_ago(1), # start now
     'email': ['airflow@example.com'],
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 0, # run once
-    'retry_delay': timedelta(minutes=5),
     'sla': timedelta(hours=2),
 }
 
 with DAG(
-        f'github_insights',
+        f'github_insights_backup',
         default_args=default_args,
         description='Downloads github events, copies them to a bucket, runs a dataproc task that puts the results in BigQuery',
-        schedule_interval=timedelta(days=1),
+        schedule_interval="@once",
 ) as dag:
     links = create_increment_dates(gh_archive_start_date, gh_archive_end_date)
     # links = ['https://data.gharchive.org/2017-01-01-0.json.gz', 'https://data.gharchive.org/2017-03-01-0.json.gz']
@@ -96,23 +95,4 @@ with DAG(
         dag=dag
     )
 
-    dataproc_task = DataProcPySparkOperator(
-        task_id="process_write_to_bigquery",
-        cluster_name=CLUSTER_NAME,
-        main=PYSPARK_MAIN_PATH,
-        arguments=[f"gs://{OUTPUT_BUCKET}",ggi_files_to_process],
-        pyfiles=[PYSPARK_ARCHIVE_PATH],
-        dataproc_pyspark_jars=['gs://spark-lib/bigquery/spark-bigquery-with-dependencies_2.12-0.16.0.jar'],
-        region='us-central1',
-        retries=0,
-        job_name=f"process_write_to_bigquery_{int(time.time())}",
-        dag=dag
-    )
-
-    clear_bucket = BashOperator(
-        task_id=f'clear_{OUTPUT_BUCKET}',
-        bash_command=f'gsutil -m rm gs://{OUTPUT_BUCKET}/**',
-        dag=dag,
-    )
-
-    dl_tasks >> save_filenames_task >> copy_filenames_to_gs #>> dataproc_task >> clear_bucket
+    dl_tasks >> save_filenames_task >> copy_filenames_to_gs
