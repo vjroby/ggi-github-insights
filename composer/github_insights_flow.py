@@ -26,7 +26,7 @@ base_folder = '/home/airflow/gcs/data'
 ggi_files_to_process = "ggi_files_to_process.csv"
 filenames_path = f"{base_folder}/{ggi_files_to_process}"
 gh_archive_start_date = "2017-01-01"
-gh_archive_end_date = "2017-01-02"
+gh_archive_end_date = "2017-02-28"
 
 
 def create_combined_tasks(download_link, dag, bucket) -> Tuple[BashOperator, str]:
@@ -115,4 +115,4 @@ with DAG(
         dag=dag,
     )
 
-    dl_tasks >> save_filenames_task >> copy_filenames_to_gs >> dataproc_task >> clear_bucket
+    dl_tasks >> save_filenames_task >> copy_filenames_to_gs #>> dataproc_task >> clear_bucket

@@ -22,7 +22,9 @@ ggi = GGiGitHubInsights(spark, csv_filenames_path)
 
 print('Read csv to get file names')
 filenames_df = ggi.get_json_filenames()
+filenames_df.cache()
 filenames_df.show()
+print(f"Processing: {filenames_df.count()} files.")
 
 print('Convert to list')
 files = ggi.convert_to_list(filenames_df)

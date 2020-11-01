@@ -1,9 +1,10 @@
 from typing import List, Dict
-
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql import functions as F
-
 from pyspark.sql.types import StructType, StringType
+
+import datetime
+import time
 
 
 class GGiGitHubInsights:
@@ -33,13 +34,13 @@ class GGiGitHubInsights:
             .json(filename) \
             .where(F.col('type') == 'PushEvent') \
             .select(
-                F.col('repo.id').alias('repository_id'),
-                F.col('payload.distinct_size').alias('dist_commits'),
-                F.to_timestamp(F.col('created_at'), "yyyy-MM-dd'T'HH:mm:ss'Z'").alias('timestamp')) \
+            F.col('repo.id').alias('repository_id'),
+            F.col('payload.distinct_size').alias('dist_commits'),
+            F.to_timestamp(F.col('created_at'), "yyyy-MM-dd'T'HH:mm:ss'Z'").alias('timestamp')) \
             .withColumn('week_of_year', F.weekofyear(F.col('timestamp'))) \
             .withColumn('month', F.month(F.col('timestamp'))) \
             .withColumn('day', F.to_date(F.col('timestamp'))) \
-            .drop('timestamp')\
+            .drop('timestamp') \
             .na.drop()
 
     def union_dfs(self, events_df: List[DataFrame]) -> DataFrame:
@@ -52,8 +53,12 @@ class GGiGitHubInsights:
     def group_by_columns(df: DataFrame, cols: List[str]) -> Dict[str, DataFrame]:
         df.cache()
         result = {}
+        timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         for col in cols:
-            result[col] = df.groupBy(F.col(col)).agg(F.sum(F.col('dist_commits')).alias(f"sum_commits_by_{col}"))
+            result[col] = df.groupBy(F.col(col), F.col('repository_id')) \
+                .agg(F.sum(F.col('dist_commits'))
+                     .alias(f"sum_commits_by_{col}")) \
+                .withColumn('created_at', F.unix_timestamp(F.lit(timestamp), 'yyyy-MM-dd HH:mm:ss').cast("timestamp"))
         return result
 
 
