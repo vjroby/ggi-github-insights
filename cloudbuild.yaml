@@ -14,12 +14,12 @@ steps:
   - name: gcr.io/cloud-builders/gsutil
     args: [ 'cp', 'package.zip', 'gs://ggi_artifacts/dataproc/package.zip' ]
     dir: '$REPO_NAME'
-    id: 'deploy-package'
+    id: 'deploy-dataproc-package'
   - name: gcr.io/cloud-builders/gsutil
     args: [ 'cp', 'start_pyspak.py', 'gs://ggi_artifacts/dataproc/start_pyspak.py' ]
     dir: '$REPO_NAME/dataproc'
-    id: 'deploy-start-script'
+    id: 'deploy-dataproc-start-script'
   - name: gcr.io/cloud-builders/gsutil
-    args: [ 'cp', 'github_insights_flow.py', 'gs://us-central1-ggi-composer-17767269-bucket/dags/github_insights_flow.py' ]
+    args: [ 'cp', 'github_insights_flow.py', 'gs://us-central1-ggi-composer-8d5443e1-bucket/dags/github_insights_flow.py' ]
     dir: '$REPO_NAME/composer'
     id: 'deploy-composer-pipeline'
