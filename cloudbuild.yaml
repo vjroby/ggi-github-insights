@@ -20,6 +20,6 @@ steps:
     dir: '$REPO_NAME/dataproc'
     id: 'deploy-dataproc-start-script'
   - name: gcr.io/cloud-builders/gsutil
-    args: [ 'cp', 'github_insights_flow.py', 'gs://us-central1-ggi-composer-20-5ba2aa68-bucket/dags/github_insights_flow.py' ]
+    args: [ 'cp', 'github_insights_flow.py', 'gs://us-central1-ggi-composer-20-5ba2aa68-bucket/dags/github_insights_flow_2.py' ]
     dir: '$REPO_NAME/composer'
     id: 'deploy-composer-pipeline'

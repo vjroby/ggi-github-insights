@@ -14,7 +14,8 @@ import time
 
 
 # env
-OUTPUT_BUCKET = os.environ['OUTPUT_BUCKET']
+# OUTPUT_BUCKET = os.environ['OUTPUT_BUCKET']
+OUTPUT_BUCKET = "data_gharchive_org_20203010"
 PYSPARK_BUCKET = os.environ['PYSPARK_BUCKET']
 CLUSTER_NAME = os.environ['CLUSTER_NAME']
 PYSPARK_MAIN_PATH = os.environ['PYSPARK_MAIN_PATH']
@@ -26,7 +27,7 @@ base_folder = '/home/airflow/gcs/data'
 ggi_files_to_process = "ggi_files_to_process.csv"
 filenames_path = f"{base_folder}/{ggi_files_to_process}"
 gh_archive_start_date = "2017-01-01"
-gh_archive_end_date = "2017-02-28"
+gh_archive_end_date = "2017-01-05"
 
 
 def create_combined_tasks(download_link, dag, bucket) -> Tuple[BashOperator, str]:
@@ -67,10 +68,12 @@ default_args = {
 }
 
 with DAG(
-        f'github_insights_backup',
+        f'github_insights_20201101',
         default_args=default_args,
         description='Downloads github events, copies them to a bucket, runs a dataproc task that puts the results in BigQuery',
         schedule_interval="@once",
+        concurrency=100,
+        max_active_runs=1,
 ) as dag:
     links = create_increment_dates(gh_archive_start_date, gh_archive_end_date)
     # links = ['https://data.gharchive.org/2017-01-01-0.json.gz', 'https://data.gharchive.org/2017-03-01-0.json.gz']
@@ -92,7 +95,27 @@ with DAG(
         src=filenames_path,
         dst=ggi_files_to_process,
         bucket=OUTPUT_BUCKET,
+        task_concurrency= 50,
         dag=dag
     )
 
-    dl_tasks >> save_filenames_task >> copy_filenames_to_gs
+    dataproc_task = DataProcPySparkOperator(
+        task_id="process_write_to_bigquery",
+        cluster_name=CLUSTER_NAME,
+        main=PYSPARK_MAIN_PATH,
+        arguments=[f"gs://{OUTPUT_BUCKET}",ggi_files_to_process],
+        pyfiles=[PYSPARK_ARCHIVE_PATH],
+        dataproc_pyspark_jars=['gs://spark-lib/bigquery/spark-bigquery-with-dependencies_2.12-0.16.0.jar'],
+        region='us-central1',
+        retries=0,
+        job_name=f"process_write_to_bigquery_{int(time.time())}",
+        dag=dag
+    )
+
+    clear_bucket = BashOperator(
+        task_id=f'clear_{OUTPUT_BUCKET}',
+        bash_command=f'gsutil -m rm gs://{OUTPUT_BUCKET}/**',
+        dag=dag,
+    )
+
+    dl_tasks >> save_filenames_task >> copy_filenames_to_gs >> dataproc_task >> clear_bucket
