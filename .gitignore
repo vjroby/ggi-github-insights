@@ -71,6 +71,10 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 # project
+__pycache__/
+*.py[cod]
+*$py.class
+.DS_store
 spark-warehouse
 metastore_db
 .ipynb_checkpoints
