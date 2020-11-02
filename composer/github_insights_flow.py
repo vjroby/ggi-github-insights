@@ -72,7 +72,7 @@ with DAG(
         default_args=default_args,
         description='Downloads github events, copies them to a bucket, runs a dataproc task that puts the results in BigQuery',
         schedule_interval="@once",
-        concurrency=100,
+        concurrency=20,
         max_active_runs=1,
 ) as dag:
     links = create_increment_dates(gh_archive_start_date, gh_archive_end_date)

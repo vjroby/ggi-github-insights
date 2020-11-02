@@ -10,7 +10,7 @@ Project Structure per folder
 Apache spark is bound to dataproc vm version (1.5)[https://cloud.google.com/dataproc/docs/concepts/versioning/dataproc-release-1.5]
 
 
-The latest version of python that works with apache spark 2.4.5 is python 3.7
+The latest version of python that works with apache spark 2.4.7 is python 3.7
 Create environment (gienv):
 
 ```shell script
@@ -49,4 +49,3 @@ export SPARK_HOME=<path to spark 2.4.7>
 3. Added a build test step in a docker container
 4. Use git hub tags for artifacts
 5. Create a last build step to check that the DAG is running
-6. Use VPC with FW rules to better
